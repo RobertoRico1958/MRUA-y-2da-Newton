@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRUA y Segunda Ley de Newton</title>
+<style>
+    :root{
+        --bg:#f4f7fb;
+        --card:#ffffff;
+        --text:#172033;
+        --muted:#5d6b82;
+        --line:#dce3ee;
+        --accent:#2457d6;
+        --accent2:#0f8a6a;
+        --warn:#a05b00;
+        --danger:#b42318;
+    }
+    *{box-sizing:border-box}
+    body{
+        margin:0;
+        font-family:Arial, Helvetica, sans-serif;
+        background:var(--bg);
+        color:var(--text);
+    }
+    header{
+        background:#16233f;
+        color:white;
+        padding:22px 18px;
+        text-align:center;
+    }
+    header h1{margin:0 0 6px;font-size:28px}
+    header p{margin:3px 0;opacity:.9}
+    main{
+        max-width:1100px;
+        margin:22px auto;
+        padding:0 15px 40px;
+    }
+    .intro{
+        background:#eef3ff;
+        border-left:5px solid var(--accent);
+        padding:16px;
+        border-radius:10px;
+        margin-bottom:18px;
+    }
+    .grid{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:18px;
+    }
+    .card{
+        background:var(--card);
+        border:1px solid var(--line);
+        border-radius:14px;
+        padding:18px;
+        box-shadow:0 5px 15px rgba(28,48,86,.06);
+    }
+    h2{font-size:20px;margin-top:0}
+    h3{font-size:17px;margin-top:20px}
+    label{
+        display:block;
+        font-weight:bold;
+        margin-top:11px;
+        margin-bottom:5px;
+    }
+    input{
+        width:100%;
+        padding:10px 11px;
+        border:1px solid #bfc9d8;
+        border-radius:8px;
+        font-size:16px;
+    }
+    .small{
+        color:var(--muted);
+        font-size:13px;
+        margin-top:4px;
+    }
+    button{
+        margin-top:16px;
+        padding:11px 16px;
+        border:0;
+        border-radius:9px;
+        background:var(--accent);
+        color:white;
+        font-weight:bold;
+        cursor:pointer;
+        font-size:15px;
+    }
+    button.secondary{background:var(--accent2);margin-left:8px}
+    button.gray{background:#667085}
+    .formula{
+        background:#f8fafc;
+        border:1px solid var(--line);
+        padding:10px 12px;
+        border-radius:9px;
+        margin:8px 0;
+        font-family:"Courier New", monospace;
+        font-size:16px;
+    }
+    .result{
+        margin-top:14px;
+        padding:14px;
+        background:#f3f8ff;
+        border:1px solid #cbdaf7;
+        border-radius:10px;
+        min-height:70px;
+    }
+    .result b{color:#173e9a}
+    .chain{
+        display:grid;
+        grid-template-columns:repeat(4,1fr);
+        gap:8px;
+        margin:14px 0;
+    }
+    .step{
+        background:#f8fafc;
+        border:1px solid var(--line);
+        border-radius:10px;
+        padding:10px;
+        text-align:center;
+        font-weight:bold;
+    }
+    canvas{
+        width:100%;
+        height:180px;
+        border:1px solid var(--line);
+        border-radius:10px;
+        background:white;
+        margin-top:8px;
+    }
+    .question{
+        border-top:1px solid var(--line);
+        padding-top:14px;
+        margin-top:14px;
+    }
+    .question:first-child{border-top:0;margin-top:0;padding-top:0}
+    .options label{
+        font-weight:normal;
+        margin:7px 0;
+    }
+    .options input{
+        width:auto;
+        margin-right:8px;
+    }
+    .feedback{
+        margin-top:10px;
+        font-weight:bold;
+    }
+    .ok{color:#087443}
+    .bad{color:var(--danger)}
+    .warning{color:var(--warn)}
+    .full{grid-column:1/-1}
+    footer{
+        text-align:center;
+        color:var(--muted);
+        font-size:13px;
+        margin-top:24px;
+    }
+    @media(max-width:800px){
+        .grid{grid-template-columns:1fr}
+        .chain{grid-template-columns:1fr 1fr}
+    }
+</style>
+</head>
+<body>
+<header>
+    <h1>Escuela Webster</h1>
+    <p>Física I – 3.º CCH</p>
+    <p><strong>MRUA + Segunda Ley de Newton</strong></p>
+</header>
+
+<main>
+    <div class="intro">
+        <strong>Idea central:</strong> una fuerza neta produce aceleración. Si la fuerza neta es constante,
+        la aceleración también es constante y el movimiento puede estudiarse con las ecuaciones del MRUA.
+    </div>
+
+    <div class="chain">
+        <div class="step">1. Fuerzas<br>F₁, F₂, F₃</div>
+        <div class="step">2. Fuerza neta<br>ΣF</div>
+        <div class="step">3. Aceleración<br>a = ΣF / m</div>
+        <div class="step">4. MRUA<br>v(t), x(t)</div>
+    </div>
+
+    <div class="grid">
+        <section class="card">
+            <h2>1. Datos del sistema</h2>
+
+            <label>Masa del objeto, m (kg)</label>
+            <input id="masa" type="number" step="any" value="2">
+
+            <h3>Fuerzas horizontales</h3>
+            <p class="small">Usa signo positivo para fuerzas hacia la derecha y negativo para fuerzas hacia la izquierda.</p>
+
+            <label>Fuerza 1, F₁ (N)</label>
+            <input id="f1" type="number" step="any" value="10">
+
+            <label>Fuerza 2, F₂ (N)</label>
+            <input id="f2" type="number" step="any" value="-4">
+
+            <label>Fuerza 3, F₃ (N)</label>
+            <input id="f3" type="number" step="any" value="0">
+
+            <h3>Condiciones iniciales</h3>
+
+            <label>Posición inicial, x₀ (m)</label>
+            <input id="x0" type="number" step="any" value="0">
+
+            <label>Velocidad inicial, v₀ (m/s)</label>
+            <input id="v0" type="number" step="any" value="1">
+
+            <label>Tiempo, t (s)</label>
+            <input id="tiempo" type="number" step="any" value="3">
+
+            <button onclick="calcular()">Calcular movimiento</button>
+            <button class="gray" onclick="reiniciar()">Reiniciar</button>
+        </section>
+
+        <section class="card">
+            <h2>2. Relación Física</h2>
+            <div class="formula">ΣF = F₁ + F₂ + F₃</div>
+            <div class="formula">ΣF = m·a  →  a = ΣF / m</div>
+            <div class="formula">v = v₀ + a·t</div>
+            <div class="formula">x = x₀ + v₀·t + ½·a·t²</div>
+
+            <div id="resultado" class="result">
+                Introduce los datos y pulsa <b>Calcular movimiento</b>.
+            </div>
+
+            <h3>Interpretación</h3>
+            <div id="interpretacion" class="result">
+                Aquí aparecerá una explicación física del resultado.
+            </div>
+
+            <h3>Representación del movimiento</h3>
+            <canvas id="canvas" width="640" height="180"></canvas>
+            <button class="secondary" onclick="animar()">Animar</button>
+        </section>
+
+        <section class="card full">
+            <h2>3. Comprueba tu razonamiento</h2>
+
+            <div class="question">
+                <p><strong>1.</strong> Un objeto de 4 kg recibe una fuerza neta constante de 12 N. ¿Cuál es su aceleración?</p>
+                <div class="options">
+                    <label><input type="radio" name="q1" value="a"> 48 m/s²</label>
+                    <label><input type="radio" name="q1" value="b"> 3 m/s²</label>
+                    <label><input type="radio" name="q1" value="c"> 0.33 m/s²</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <p><strong>2.</strong> Si la fuerza neta sobre un objeto es cero, ¿qué ocurre con su aceleración?</p>
+                <div class="options">
+                    <label><input type="radio" name="q2" value="a"> Siempre aumenta.</label>
+                    <label><input type="radio" name="q2" value="b"> Es cero.</label>
+                    <label><input type="radio" name="q2" value="c"> Depende únicamente de la masa.</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <p><strong>3.</strong> Un objeto parte con v₀ = 2 m/s y tiene a = 3 m/s² durante 4 s. ¿Cuál es su velocidad final?</p>
+                <div class="options">
+                    <label><input type="radio" name="q3" value="a"> 5 m/s</label>
+                    <label><input type="radio" name="q3" value="b"> 12 m/s</label>
+                    <label><input type="radio" name="q3" value="c"> 14 m/s</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <p><strong>4.</strong> Si duplicamos la masa y mantenemos la misma fuerza neta, la aceleración:</p>
+                <div class="options">
+                    <label><input type="radio" name="q4" value="a"> Se duplica.</label>
+                    <label><input type="radio" name="q4" value="b"> Se reduce a la mitad.</label>
+                    <label><input type="radio" name="q4" value="c"> No cambia.</label>
+                </div>
+            </div>
+
+            <div class="question">
+                <p><strong>5.</strong> ¿Cuál es la conexión entre la segunda ley de Newton y el MRUA?</p>
+                <div class="options">
+                    <label><input type="radio" name="q5" value="a"> Si ΣF es constante, la aceleración es constante y pueden usarse las ecuaciones del MRUA.</label>
+                    <label><input type="radio" name="q5" value="b"> No existe relación entre ambos temas.</label>
+                    <label><input type="radio" name="q5" value="c"> La segunda ley solo se aplica cuando el objeto está en reposo.</label>
+                </div>
+            </div>
+
+            <button onclick="revisar()">Revisar respuestas</button>
+            <div id="feedback" class="feedback"></div>
+        </section>
+    </div>
+
+    <footer>
+        Proyecto didáctico de Física · Integración de dinámica y cinemática
+    </footer>
+</main>
+
+<script>
+let datosActuales = null;
+let animId = null;
+
+function n(id){
+    return parseFloat(document.getElementById(id).value);
+}
+
+function fmt(x){
+    if (Math.abs(x) < 1e-10) x = 0;
+    return Number(x.toFixed(3));
+}
+
+function calcular(){
+    const m=n("masa"), f1=n("f1"), f2=n("f2"), f3=n("f3");
+    const x0=n("x0"), v0=n("v0"), t=n("tiempo");
+
+    if([m,f1,f2,f3,x0,v0,t].some(v=>Number.isNaN(v))){
+        document.getElementById("resultado").innerHTML =
+            '<span class="bad">Completa todos los datos numéricos.</span>';
+        return;
+    }
+    if(m<=0){
+        document.getElementById("resultado").innerHTML =
+            '<span class="bad">La masa debe ser mayor que cero.</span>';
+        return;
+    }
+    if(t<0){
+        document.getElementById("resultado").innerHTML =
+            '<span class="bad">El tiempo no puede ser negativo.</span>';
+        return;
+    }
+
+    const F=f1+f2+f3;
+    const a=F/m;
+    const v=v0+a*t;
+    const dx=v0*t+0.5*a*t*t;
+    const x=x0+dx;
+
+    datosActuales={m,f1,f2,f3,F,a,x0,v0,t,v,x,dx};
+
+    document.getElementById("resultado").innerHTML = `
+        <b>Paso 1. Fuerza neta:</b><br>
+        ΣF = (${fmt(f1)}) + (${fmt(f2)}) + (${fmt(f3)}) = <b>${fmt(F)} N</b><br><br>
+        <b>Paso 2. Aceleración:</b><br>
+        a = ΣF/m = ${fmt(F)}/${fmt(m)} = <b>${fmt(a)} m/s²</b><br><br>
+        <b>Paso 3. Velocidad:</b><br>
+        v = v₀ + at = ${fmt(v0)} + (${fmt(a)})(${fmt(t)}) = <b>${fmt(v)} m/s</b><br><br>
+        <b>Paso 4. Posición:</b><br>
+        x = x₀ + v₀t + ½at² = <b>${fmt(x)} m</b><br>
+        Desplazamiento Δx = <b>${fmt(dx)} m</b>
+    `;
+
+    let texto="";
+    if(Math.abs(F)<1e-10){
+        texto = `La fuerza neta es cero, por lo tanto a = 0. El objeto no cambia su velocidad.
+        Si ya estaba moviéndose, continúa con velocidad constante; si estaba en reposo, permanece en reposo.`;
+    } else {
+        texto = `Como la fuerza neta es constante, la aceleración también es constante. Por eso se pueden aplicar las ecuaciones del MRUA. `;
+        if(v0===0){
+            texto += a>0 ? `El objeto parte del reposo y acelera hacia la derecha.` :
+                           `El objeto parte del reposo y acelera hacia la izquierda.`;
+        } else if(Math.sign(v0)===Math.sign(a)){
+            texto += `La aceleración tiene el mismo sentido que la velocidad inicial, así que la rapidez aumenta.`;
+        } else {
+            texto += `La aceleración tiene sentido contrario a la velocidad inicial, por lo que inicialmente la rapidez disminuye.`;
+            const tstop = -v0/a;
+            if(tstop>=0 && tstop<=t){
+                texto += ` El objeto se detiene aproximadamente a los ${fmt(tstop)} s y después cambia de sentido.`;
+            }
+        }
+    }
+    document.getElementById("interpretacion").innerHTML = texto;
+    dibujarEscena(0);
+}
+
+function reiniciar(){
+    document.getElementById("masa").value=2;
+    document.getElementById("f1").value=10;
+    document.getElementById("f2").value=-4;
+    document.getElementById("f3").value=0;
+    document.getElementById("x0").value=0;
+    document.getElementById("v0").value=1;
+    document.getElementById("tiempo").value=3;
+    document.getElementById("resultado").innerHTML='Introduce los datos y pulsa <b>Calcular movimiento</b>.';
+    document.getElementById("interpretacion").innerHTML='Aquí aparecerá una explicación física del resultado.';
+    datosActuales=null;
+    if(animId) cancelAnimationFrame(animId);
+    limpiarCanvas();
+}
+
+function limpiarCanvas(){
+    const c=document.getElementById("canvas");
+    const ctx=c.getContext("2d");
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.fillStyle="#ffffff";
+    ctx.fillRect(0,0,c.width,c.height);
+    ctx.strokeStyle="#667085";
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(30,135);
+    ctx.lineTo(610,135);
+    ctx.stroke();
+}
+
+function dibujarFlecha(ctx,x1,y1,x2,y2,texto){
+    const ang=Math.atan2(y2-y1,x2-x1);
+    ctx.strokeStyle="#2457d6";
+    ctx.fillStyle="#2457d6";
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-10*Math.cos(ang-Math.PI/6),y2-10*Math.sin(ang-Math.PI/6));
+    ctx.lineTo(x2-10*Math.cos(ang+Math.PI/6),y2-10*Math.sin(ang+Math.PI/6));
+    ctx.closePath(); ctx.fill();
+    ctx.font="14px Arial";
+    ctx.fillText(texto,(x1+x2)/2-15,y1-8);
+}
+
+function dibujarEscena(fraccion){
+    limpiarCanvas();
+    if(!datosActuales) return;
+    const c=document.getElementById("canvas");
+    const ctx=c.getContext("2d");
+    const d=datosActuales;
+
+    const tt=d.t*fraccion;
+    const pos=d.x0+d.v0*tt+0.5*d.a*tt*tt;
+
+    const minX=Math.min(d.x0,d.x)-2;
+    const maxX=Math.max(d.x0,d.x)+2;
+    const rango=Math.max(4,maxX-minX);
+
+    let px=50+(pos-minX)/rango*540;
+    px=Math.max(45,Math.min(595,px));
+
+    ctx.fillStyle="#253858";
+    ctx.fillRect(px-24,100,48,34);
+    ctx.beginPath();
+    ctx.arc(px-14,138,6,0,Math.PI*2);
+    ctx.arc(px+14,138,6,0,Math.PI*2);
+    ctx.fill();
+
+    if(Math.abs(d.F)>1e-10){
+        if(d.F>0) dibujarFlecha(ctx,px,88,px+75,88,"ΣF");
+        else dibujarFlecha(ctx,px,88,px-75,88,"ΣF");
+    }
+
+    ctx.fillStyle="#172033";
+    ctx.font="14px Arial";
+    ctx.fillText(`t = ${fmt(tt)} s`,20,25);
+    ctx.fillText(`x = ${fmt(pos)} m`,20,45);
+    ctx.fillText(`a = ${fmt(d.a)} m/s²`,20,65);
+}
+
+function animar(){
+    if(!datosActuales) calcular();
+    if(!datosActuales) return;
+    if(animId) cancelAnimationFrame(animId);
+    const inicio=performance.now();
+    const duracion=3500;
+
+    function frame(now){
+        let f=(now-inicio)/duracion;
+        if(f>1) f=1;
+        dibujarEscena(f);
+        if(f<1) animId=requestAnimationFrame(frame);
+    }
+    animId=requestAnimationFrame(frame);
+}
+
+function revisar(){
+    const correctas={q1:"b",q2:"b",q3:"c",q4:"b",q5:"a"};
+    let puntos=0, respondidas=0;
+    for(const [q,resp] of Object.entries(correctas)){
+        const marcada=document.querySelector(`input[name="${q}"]:checked`);
+        if(marcada){
+            respondidas++;
+            if(marcada.value===resp) puntos++;
+        }
+    }
+    const fb=document.getElementById("feedback");
+    if(respondidas<5){
+        fb.className="feedback warning";
+        fb.textContent=`Has respondido ${respondidas} de 5 preguntas. Completa las restantes.`;
+        return;
+    }
+    const porcentaje=puntos*20;
+    fb.className=puntos>=4 ? "feedback ok" : "feedback bad";
+    fb.innerHTML=`Resultado: ${puntos}/5 (${porcentaje}%). ` +
+        (puntos===5 ? "¡Excelente! Comprendes la relación entre fuerza, aceleración y MRUA." :
+         puntos>=4 ? "Muy bien. Revisa únicamente el reactivo incorrecto." :
+         "Conviene revisar la cadena: ΣF → a → v → x.");
+}
+
+limpiarCanvas();
+</script>
+</body>
+</html>
